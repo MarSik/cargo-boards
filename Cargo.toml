@@ -1,0 +1,16 @@
+[package]
+name = "cargo-boards"
+description = "Cargo subcommand to build with multiple feature configurations"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/MarSik/cargo-boards.git"
+readme = "README.md"
+
+[dependencies]
+clap = { version = "4.6.6", features = ["derive", "env"] }
+env_logger = "0.11.11"
+log = "0.4.34"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1"
+toml = "1.1.4"
