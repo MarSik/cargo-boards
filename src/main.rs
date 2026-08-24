@@ -6,11 +6,11 @@
 //!
 //! The tool loads the Boards.toml file and also all boards/<id>.toml files.
 
-use std::vec::Vec;
-use std::string::String;
-use std::process::Command;
-use std::path::{Path, PathBuf};
 use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::string::String;
+use std::vec::Vec;
 
 use clap::Parser;
 
@@ -89,7 +89,10 @@ fn parse_board_file(path: &Path) -> Vec<Board> {
         .unwrap_or_else(|e| fail(format!("failed to read {}: {e}", path.display())));
     let mut board_file: BoardFile = toml::from_str(&contents)
         .unwrap_or_else(|e| fail(format!("failed to parse {}: {e}", path.display())));
-    board_file.boards.iter_mut().for_each(|(k, b)| b.id = k.clone());
+    board_file
+        .boards
+        .iter_mut()
+        .for_each(|(k, b)| b.id = k.clone());
     board_file.boards.values().cloned().collect()
 }
 
@@ -109,9 +112,12 @@ fn parse_boards_dir(dir: &Path) -> Vec<Board> {
             .unwrap_or_else(|e| fail(format!("failed to read {}: {e}", path.display())));
         let mut board: Board = toml::from_str(&contents)
             .unwrap_or_else(|e| fail(format!("failed to parse {}: {e}", path.display())));
-        let id = path.file_stem()
+        let id = path
+            .file_stem()
             .unwrap_or_else(|| fail(format!("failed to get basename {path:?}")));
-        board.id = id.to_str().map(|s| s.to_string())
+        board.id = id
+            .to_str()
+            .map(|s| s.to_string())
             .unwrap_or_else(|| fail(format!("failed to parse basename {id:?}")));
         boards.push(board);
     }
@@ -119,9 +125,7 @@ fn parse_boards_dir(dir: &Path) -> Vec<Board> {
 }
 
 fn main() {
-    env_logger::builder()
-        .format_timestamp(None)
-        .init();
+    env_logger::builder().format_timestamp(None).init();
 
     // When run as a cargo subcommand (`cargo boards ...`), cargo passes the
     // subcommand name "boards" as the first argument - drop it so it isn't
@@ -204,7 +208,11 @@ fn main() {
     let mut last_id = String::new();
     for b in &all_boards {
         if b.id.is_empty() {
-            log::error!("Board without id found!\nname={}\ndescription={}", b.name, b.description);
+            log::error!(
+                "Board without id found!\nname={}\ndescription={}",
+                b.name,
+                b.description
+            );
             errors += 1;
             continue;
         }
@@ -220,7 +228,10 @@ fn main() {
         last_id = b.id.clone();
     }
     if errors > 0 {
-        fail(format!("Some boards were defined improperly. {} errors found.", errors));
+        fail(format!(
+            "Some boards were defined improperly. {} errors found.",
+            errors
+        ));
     }
 
     // Board list
@@ -231,7 +242,10 @@ fn main() {
             if i > 0 {
                 println!();
             }
-            print!("[{}]\nname: {}\ndescription: {}\n", b.id, b.name, b.description);
+            print!(
+                "[{}]\nname: {}\ndescription: {}\n",
+                b.id, b.name, b.description
+            );
         }
         return;
     }
@@ -259,8 +273,11 @@ fn main() {
     // Some cargo commands do not make sense when multiple boards are selected
     if selected.len() > 1 {
         match command.as_str() {
-            "run" | "embed" => fail(format!("cargo {} can operate on single board only", command)),
-            _ => (), 
+            "run" | "embed" => fail(format!(
+                "cargo {} can operate on single board only",
+                command
+            )),
+            _ => (),
         }
     }
 
@@ -282,20 +299,14 @@ fn main() {
             if !rustflags.is_empty() {
                 rustflags.push(' ');
             }
-            rustflags.push_str(&format!(
-                r#"--cfg {}="{}""#,
-                key, value
-            ));
+            rustflags.push_str(&format!(r#"--cfg {}="{}""#, key, value));
         }
 
         // Include board cfg with board name
         if !rustflags.is_empty() {
             rustflags.push(' ');
         }
-        rustflags.push_str(&format!(
-            r#"--cfg board="{}""#,
-            board.id,
-        ));
+        rustflags.push_str(&format!(r#"--cfg board="{}""#, board.id,));
 
         // Construct the necessary feature and cfg arguments for cargo.
         let mut cmd = Command::new("cargo");
@@ -321,12 +332,9 @@ fn main() {
         log::debug!("running: {cmd:?}");
 
         // Call cargo.
-        let status = cmd.status().unwrap_or_else(|e| {
-            fail(format!(
-                "failed to run cargo for board `{}`: {e}",
-                board.id
-            ))
-        });
+        let status = cmd
+            .status()
+            .unwrap_or_else(|e| fail(format!("failed to run cargo for board `{}`: {e}", board.id)));
         if !status.success() {
             std::process::exit(status.code().unwrap_or(1));
         }
