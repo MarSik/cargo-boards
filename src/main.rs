@@ -311,14 +311,17 @@ fn main() {
         // Construct the necessary feature and cfg arguments for cargo.
         let mut cmd = Command::new("cargo");
         cmd.arg(command);
-        if !board.features.is_empty() {
-            cmd.arg("--features").arg(board.features.join(","));
-        }
-        if board.default_features == Some(false) {
-            cmd.arg("--no-default-features");
-        }
-        if !rustflags.is_empty() {
-            cmd.env("RUSTFLAGS", rustflags);
+
+        if command != "clean" {
+            if !board.features.is_empty() {
+                cmd.arg("--features").arg(board.features.join(","));
+            }
+            if board.default_features == Some(false) {
+                cmd.arg("--no-default-features");
+            }
+            if !rustflags.is_empty() {
+                cmd.env("RUSTFLAGS", rustflags);
+            }
         }
 
         // Construct the target dir path -
