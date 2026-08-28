@@ -87,4 +87,14 @@ Cargo run works too, but requires a specific board variant to be selected first.
 cargo boards -b board_1 run --release -- my_custom_arguments
 ```
 
+## Contributing
+
+First install a stable Rust toolchain and add https://docs.rs/cargo-audit/latest/cargo_audit/
+
+All code changes must pass the following checks with no warnings:
+
+- cargo audit
+- cargo check
+- cargo fmt
+- cargo clippy
 
