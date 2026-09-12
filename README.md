@@ -35,6 +35,9 @@ default-features = optional true|false
 
 [boards.<id>.configs]
 target = "armv6e-none-eabi"
+
+[boards.<id>.env]
+EXAMPLE_ENV = "example-value"
 ```
 
 File based boards use the same fields, but `id` matches the basename of the file:
@@ -48,6 +51,9 @@ default-features = optional true|false
 
 [configs]
 target = "armv6e-none-eabi"
+
+[env]
+EXAMPLE_ENV = "example-value"
 ```
 
 ## List
