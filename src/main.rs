@@ -306,7 +306,7 @@ fn main() {
         if !rustflags.is_empty() {
             rustflags.push(' ');
         }
-        rustflags.push_str(&format!(r#"--cfg board="{}""#, board.id,));
+        rustflags.push_str(&format!(r#"--cfg boards_current="{}""#, board.id,));
 
         // Construct the necessary feature and cfg arguments for cargo.
         let mut cmd = Command::new("cargo");
