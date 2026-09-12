@@ -303,7 +303,7 @@ fn main() {
         // Construct the necessary config definitions.
         for (key, value) in &board.configs {
             cmd.arg("--config");
-            cmd.arg(&format!(r#"{}="{}""#, key, value));
+            cmd.arg(format!(r#"{}="{}""#, key, value));
         }
 
         // Include board env var with board name
