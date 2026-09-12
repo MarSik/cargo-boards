@@ -7,6 +7,7 @@
 //! The tool loads the Boards.toml file and also all boards/<id>.toml files.
 
 use std::collections::BTreeMap;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::string::String;
@@ -42,6 +43,9 @@ pub struct Board {
     // Enable default features, defaults to true
     #[serde(default)]
     default_features: Option<bool>,
+    // Environment variables to set
+    #[serde(default)]
+    env: BTreeMap<String, String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -293,23 +297,23 @@ fn main() {
     for board in &selected {
         log::info!("Building board {}", board.name);
 
-        // Construct the necessary macro definitions.
-        let mut rustflags = std::env::var("RUSTFLAGS").unwrap_or_default();
-        for (key, value) in &board.configs {
-            if !rustflags.is_empty() {
-                rustflags.push(' ');
-            }
-            rustflags.push_str(&format!(r#"--cfg {}="{}""#, key, value));
-        }
-
-        // Include board cfg with board name
-        if !rustflags.is_empty() {
-            rustflags.push(' ');
-        }
-        rustflags.push_str(&format!(r#"--cfg boards_current="{}""#, board.id,));
-
         // Construct the necessary feature and cfg arguments for cargo.
         let mut cmd = Command::new("cargo");
+
+        // Construct the necessary config definitions.
+        for (key, value) in &board.configs {
+            cmd.arg("--config");
+            cmd.arg(&format!(r#"{}="{}""#, key, value));
+        }
+
+        // Include board env var with board name
+        cmd.env("BOARDS_BOARD_ID", OsStr::new(&board.id));
+
+        // Construct the necessary env vars
+        for (key, value) in &board.env {
+            cmd.env(key, OsStr::new(&value));
+        }
+
         cmd.arg(command);
 
         if command != "clean" {
@@ -318,9 +322,6 @@ fn main() {
             }
             if board.default_features == Some(false) {
                 cmd.arg("--no-default-features");
-            }
-            if !rustflags.is_empty() {
-                cmd.env("RUSTFLAGS", rustflags);
             }
         }
 
